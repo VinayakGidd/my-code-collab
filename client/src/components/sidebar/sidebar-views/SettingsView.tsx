@@ -19,8 +19,8 @@ export default function SettingsView() {
         setFontSize,
         fontFamily,
         setFontFamily,
-        showGitHubCorner,
-        setShowGitHubCorner,
+        // showGitHubCorner,
+        // setShowGitHubCorner,
         resetSettings,
     } = useSettings()
     const { viewHeight } = useResponsive()
@@ -33,8 +33,8 @@ export default function SettingsView() {
         setLanguage(e.target.value)
     const handleFontSizeChange = (e: ChangeEvent<HTMLSelectElement>) =>
         setFontSize(parseInt(e.target.value))
-    const handleShowGitHubCornerChange = (e: ChangeEvent<HTMLInputElement>) =>
-        setShowGitHubCorner(e.target.checked)
+    // const handleShowGitHubCornerChange = (e: ChangeEvent<HTMLInputElement>) =>
+    //     setShowGitHubCorner(e.target.checked)
 
     useEffect(() => {
         const editor = document.querySelector(

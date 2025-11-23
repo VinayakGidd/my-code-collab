@@ -8,7 +8,7 @@ function Footer() {
                 </span>{" "}
                 by{" "}
                 <a
-                    href="https://github.com/shaikhsameer18"
+                    href="https://github.com/VinayakGidd"
                     className="text-pink-400 underline underline-offset-2 transition-colors hover:text-pink-300"
                     target="_blank"
                     rel="noopener noreferrer"

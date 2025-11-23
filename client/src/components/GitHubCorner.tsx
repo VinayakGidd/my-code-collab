@@ -8,7 +8,7 @@ export default function GitHubCorner() {
 
   return (
     <a
-      href="https://github.com/shaikhsameer18"
+      href="https://github.com/VinayakGidd"
       className="github-corner absolute right-0 top-0 z-10"
       aria-label="View source on GitHub"
       target="_blank"
