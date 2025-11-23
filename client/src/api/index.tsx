@@ -1,3 +1,57 @@
+// import axios, { AxiosInstance } from "axios";
+
+// // ✅ Piston API Configuration (For Code Execution)
+// const pistonBaseUrl = "https://emkc.org/api/v2/piston";
+// const pistonInstance: AxiosInstance = axios.create({
+//     baseURL: pistonBaseUrl,
+//     headers: {
+//         "Content-Type": "application/json",
+//     },
+// });
+
+// const API_BASE_URL = "http://localhost:3000/api/chatbot";
+
+// export const sendMessageToChatbot = async (message: string, onChunk: (chunk: string) => void): Promise<void> => {
+//     try {
+//         const response = await fetch(`${API_BASE_URL}/ask`, {
+//             method: "POST",
+//             headers: {
+//                 "Content-Type": "application/json",
+//             },
+//             body: JSON.stringify({ message }),
+//         });
+
+//         if (!response.ok) {
+//             throw new Error(`Error: ${response.statusText}`);
+//         }
+
+//         const reader = response.body?.getReader();
+//         const decoder = new TextDecoder();
+
+//         // eslint-disable-next-line no-constant-condition
+//         while (true) {
+//             const { done, value } = await reader!.read();
+//             if (done) break;
+
+//             const chunk = decoder.decode(value, { stream: true });
+//             const lines = chunk.split("\n").filter((line) => line.trim().startsWith("data:"));
+
+//             for (const line of lines) {
+//                 const data = line.replace("data:", "").trim();
+//                 if (data) {
+//                     const parsedData = JSON.parse(data);
+//                     onChunk(parsedData.content); // Pass each chunk to the callback
+//                 }
+//             }
+//         }
+//     } catch (error) {
+//         console.error("❌ API Error:", error);
+//         onChunk("❌ Error fetching response from AI.");
+//     }
+// };
+
+// export default pistonInstance;
+
 import axios, { AxiosInstance } from "axios";
 
 // ✅ Piston API Configuration (For Code Execution)
@@ -9,20 +63,32 @@ const pistonInstance: AxiosInstance = axios.create({
     },
 });
 
-const API_BASE_URL = "http://localhost:3000/api/chatbot";
+// ✅ FIX 1: Dynamic Backend URL
+// This checks for the Vercel environment variable first. 
+// If it's missing, it falls back to localhost.
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:3000";
 
-export const sendMessageToChatbot = async (message: string, onChunk: (chunk: string) => void): Promise<void> => {
+// ✅ FIX 2: Updated Function Signature to include roomId
+export const sendMessageToChatbot = async (
+    message: string, 
+    roomId: string, // Added this so the backend knows which room context to use
+    onChunk: (chunk: string) => void
+): Promise<void> => {
     try {
-        const response = await fetch(`${API_BASE_URL}/ask`, {
+        console.log(`Sending AI request to: ${BACKEND_URL}/api/chatbot/ask`);
+
+        const response = await fetch(`${BACKEND_URL}/api/chatbot/ask`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({ message }),
+            // ✅ FIX 3: Sending roomId along with the message
+            body: JSON.stringify({ message, roomId }), 
         });
 
         if (!response.ok) {
-            throw new Error(`Error: ${response.statusText}`);
+            const errorText = await response.text();
+            throw new Error(`Server Error: ${response.status} - ${errorText}`);
         }
 
         const reader = response.body?.getReader();
@@ -34,19 +100,36 @@ export const sendMessageToChatbot = async (message: string, onChunk: (chunk: str
             if (done) break;
 
             const chunk = decoder.decode(value, { stream: true });
-            const lines = chunk.split("\n").filter((line) => line.trim().startsWith("data:"));
+            
+            // Handle potentially split chunks
+            const lines = chunk.split("\n").filter((line) => line.trim() !== "");
 
             for (const line of lines) {
-                const data = line.replace("data:", "").trim();
-                if (data) {
-                    const parsedData = JSON.parse(data);
-                    onChunk(parsedData.content); // Pass each chunk to the callback
+                const trimmedLine = line.trim();
+                
+                // Check if the line starts with "data:" (SSE format)
+                if (trimmedLine.startsWith("data:")) {
+                    const dataStr = trimmedLine.replace("data:", "").trim();
+                    
+                    if (dataStr === "[DONE]") return; // Standard SSE end signal
+
+                    try {
+                        const parsedData = JSON.parse(dataStr);
+                        // Access the content correctly based on your backend response structure
+                        const content = parsedData.content || parsedData.message || ""; 
+                        if (content) {
+                            onChunk(content);
+                        }
+                    } catch (err) {
+                        // Sometimes the end of a stream sends "[DONE]" which isn't JSON
+                        console.warn("Skipping non-JSON chunk:", dataStr);
+                    }
                 }
             }
         }
     } catch (error) {
         console.error("❌ API Error:", error);
-        onChunk("❌ Error fetching response from AI.");
+        onChunk("❌ Error: Unable to fetch response from AI. Please check your connection.");
     }
 };
 
