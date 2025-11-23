@@ -47,7 +47,7 @@ const SocketProvider = ({ children }: { children: ReactNode }) => {
     }, []);
 
     const handleError = useCallback(
-        (err: any) => {
+        (err: Error) => {
             console.error("Socket connection error:", err); // Log the error
             setStatus(USER_STATUS.CONNECTION_FAILED);
             toast.dismiss();
@@ -142,3 +142,8 @@ const SocketProvider = ({ children }: { children: ReactNode }) => {
 
 export { SocketProvider };
 export default SocketContext;
+
+
+
+
+

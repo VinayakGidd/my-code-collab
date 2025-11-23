@@ -1,7 +1,8 @@
 {
 	"compilerOptions": {
 		"target": "ES2020",
-		"module": "CommonJS",
+		"module": "Commonjs",
+        "rootDir": "./src",
 		"strict": true,
 		"esModuleInterop": true,
 		"skipLibCheck": true,
