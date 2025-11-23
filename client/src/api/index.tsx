@@ -66,7 +66,8 @@ const pistonInstance: AxiosInstance = axios.create({
 // ✅ FIX 1: Dynamic Backend URL
 // This checks for the Vercel environment variable first. 
 // If it's missing, it falls back to localhost.
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:3000";
+// Vite uses import.meta.env
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
 // ✅ FIX 2: Updated Function Signature to include roomId
 export const sendMessageToChatbot = async (
