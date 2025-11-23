@@ -63,10 +63,7 @@ const pistonInstance: AxiosInstance = axios.create({
     },
 });
 
-// ✅ FIX 1: Dynamic Backend URL
-// This checks for the Vercel environment variable first. 
-// If it's missing, it falls back to localhost.
-// Vite uses import.meta.env
+
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
 // ✅ FIX 2: Updated Function Signature to include roomId
